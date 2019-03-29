@@ -3,54 +3,103 @@ package com.yychatcilent.view;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
 import javax.swing.*;
 
-public class FriendChat  extends JFrame implements ActionListener{
+import com.yychat.model.Message;
+import com.yychatcilent.control.CilentConnect;
 
-	//Center部分
+public class FriendChat extends JFrame implements ActionListener,Runnable{
+	
+	
+
 	JScrollPane jsp;
 	JTextArea jta;
 	
-	//南部
+	
+	
+	
 	JPanel jp;
-	JTextField jtf;//一行文本
+	JTextField jtx;
 	JButton jb;
 	
-	 public FriendChat(String sender,String receiver){
-		jta=new JTextArea();//文本区域（多行文本）
-		jta.setEditable(false);
-		jta.setForeground(Color.red);
-		jsp=new JScrollPane(jta);
-		this.add(jsp,"Center");
+	String sender;
+	String receiver;
+	
+	
+	public FriendChat(String sender,String receiver) {
+		this.sender=sender;
+		this.receiver=receiver;
 		
+		jta=new JTextArea();
+		jta.setForeground(Color.red);
+		jta.setEditable(false);
+		jsp=new JScrollPane(jta);
+		this.add(jsp);
+		
+	
 		jp=new JPanel();
-		jtf=new JTextField(15);
-		jb=new  JButton("发送");
+		jb=new JButton("发送");
 		jb.addActionListener(this);
-		jp.add(jtf);
-		jp.add(jb);
+		jtx=new JTextField(15);
+		jtx.setForeground(Color.blue);
+		jp.add(jtx);jp.add(jb);
 		this.add(jp,"South");
 		
+	
 		this.setSize(350,240);
-		this.setTitle(sender+"正在和"+receiver+"聊天");
-		//this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		this.setLocationRelativeTo(null);//居中显示
+//		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		this.setTitle(sender+"和"+receiver+"正在聊天");
+		this.setLocationRelativeTo(null);
 		this.setVisible(true);
 		
 		
 	}
 	
-	
 	public static void main(String[] args) {
-		//FriendChat  friendChat =new   FriendChat();
+		//FriendChat friendChat=new FriendChat();
 
 	}
 
-
 	@Override
-	public void actionPerformed(ActionEvent arg0) {
-		if(arg0.getSource()==jb)  jta.append(jtf.getText()+"\r\n");
+	public void actionPerformed(ActionEvent args) {
+		if(args.getSource()==jb) jta.append(jtx.getText()+"\r\n");
+		
+		Message mess=new Message();
+		mess.setSender(sender);
+		mess.setReceiver(receiver);
+		mess.setContent(jtx.getText());
+		mess.setMessageType(Message.message_common);
+		ObjectOutputStream oos;
+		
+		 try {
+			oos = new ObjectOutputStream(CilentConnect.s.getOutputStream());
+			oos.writeObject(mess);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
+	public void run() {
+		ObjectInputStream ois;
+		while(true){
+			try {
+				ois = new ObjectInputStream(CilentConnect.s.getInputStream());
+				Message mess=(Message)ois.readObject();
+				String showMessage=mess.getSender()+"对"+mess.getReceiver()+"说："+mess.getContent();
+				System.out.println(showMessage);
+				jta.append(showMessage+"\r\n");
+				} catch (IOException | ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+				
+		}
+		
 	}
 
 }

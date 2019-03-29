@@ -135,7 +135,7 @@ import javax.swing.*;
 		
 		this.setSize(150,500);
 		this.setTitle(userName+"的好友列表");
-		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		//this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		this.setLocationRelativeTo(null);
 		this.setVisible(true);
 	}
@@ -170,8 +170,8 @@ import javax.swing.*;
 		if(arg0.getClickCount()==2)  {
 			JLabel jlbl=	(JLabel)arg0.getSource();
 			String receiver=jlbl.getText();
-			new FriendChat(this.userName,receiver);
-			
+			//new FriendChat(this.userName,receiver);
+			new Thread(new FriendChat(this.userName,receiver)).start();
 		}
 		
 	}
